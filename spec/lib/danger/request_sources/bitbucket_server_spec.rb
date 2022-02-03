@@ -46,4 +46,21 @@ RSpec.describe Danger::RequestSources::BitbucketServer, host: :bitbucket_server 
       end
     end
   end
+
+  describe "#inline_violations_group" do
+    context "with multiple violations with the same severity to the same file and path" do
+      it "sorts violations without raising an error" do
+        warnings = [
+          Danger::Violation.new("foo", false, "file.rb", 1, type: :warning),
+          Danger::Violation.new("bar", false, "file.rb", 1, type: :warning)
+        ]
+        expect(bs.inline_violations_group(warnings: warnings)).to eq({
+          warnings: warnings,
+          errors: [],
+          messages: [],
+          markdowns: []
+        })
+      end
+    end
+  end
 end
