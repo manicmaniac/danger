@@ -115,7 +115,7 @@ module Danger
     end
 
     def external_dsl_attributes
-      plugins.values.reject { |plugin| @core_plugins.include? plugin }.map { |plugin| { plugin: plugin, methods: plugin.public_methods(false) } }
+      plugins.values.reject { |plugin| @core_plugins.include? plugin }.map { |plugin| { plugin: plugin, methods: plugin.class.attributes } }
     end
 
     def method_values_for_plugin_hashes(plugin_hashes)
@@ -176,8 +176,6 @@ module Danger
     # Parses the file at a path, optionally takes the content of the file for DI
     #
     def parse(path, contents = nil)
-      print_known_info if verbose
-
       contents ||= File.open(path, "r:utf-8", &:read)
 
       # Work around for Rubinius incomplete encoding in 1.9 mode
@@ -208,6 +206,7 @@ module Danger
 
         # rubocop:enable Lint/RescueException
       end
+      print_known_info if verbose
     end
 
     def print_results

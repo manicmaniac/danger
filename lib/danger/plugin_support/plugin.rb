@@ -1,5 +1,31 @@
 module Danger
   class Plugin
+    class << self
+      alias_method :original_attr, :attr
+      alias_method :original_attr_accessor, :attr_accessor
+      alias_method :original_attr_reader, :attr_reader
+
+      attr_accessor :attributes
+
+      def attr(name, *args)
+        @attributes << name
+        unless args[0].is_a?(TrueClass) || args[0].is_a?(FalseClass)
+          @attributes += args
+        end
+        original_attr(name, *args)
+      end
+
+      def attr_accessor(*names)
+        @attributes += names
+        original_attr_accessor(*names)
+      end
+
+      def attr_reader(*names)
+        @attributes += names
+        original_attr_reader(*names)
+      end
+    end
+
     def initialize(dangerfile)
       @dangerfile = dangerfile
     end
@@ -35,6 +61,7 @@ module Danger
     end
 
     def self.inherited(plugin)
+      plugin.attributes = []
       Plugin.all_plugins.push(plugin)
     end
 
