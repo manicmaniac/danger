@@ -77,6 +77,7 @@ module Danger
     def initialize(env_manager, cork_board = nil)
       @plugins = {}
       @core_plugins = []
+      @essential_plugins = []
       @ui = cork_board || Cork::Board.new(silent: false, verbose: false)
 
       # Triggers the core plugins
@@ -106,12 +107,17 @@ module Danger
 
         @plugins[klass] = plugin
         @core_plugins << plugin if self.class.core_plugin_classes.include? klass
+        @essential_plugins << plugin if self.class.essential_plugin_classes.include? klass
       end
     end
     alias init_plugins refresh_plugins
 
     def core_dsl_attributes
       @core_plugins.map { |plugin| { plugin: plugin, methods: plugin.public_methods(false) } }
+    end
+
+    def essential_dsl_attributes
+      @essential_plugins.map { |plugin| { plugin: plugin, methods: plugin.public_methods(false) } }
     end
 
     def external_dsl_attributes
@@ -152,7 +158,7 @@ module Danger
       rows = []
       rows += method_values_for_plugin_hashes(core_dsl_attributes)
       rows << ["---", "---"]
-      rows += method_values_for_plugin_hashes(external_dsl_attributes)
+      rows += method_values_for_plugin_hashes(essential_dsl_attributes)
       rows << ["---", "---"]
       rows << ["SCM", env.scm.class]
       rows << ["Source", env.ci_source.class]
