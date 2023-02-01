@@ -137,27 +137,28 @@ RSpec.describe Danger::Dangerfile, host: :github do
     end
 
     # These are things that require scoped access
-    it "exposes no external attributes by default" do
+    it "exposes essential attributes by default" do
       dm = testing_dangerfile
-      methods = dm.external_dsl_attributes.map { |hash| hash[:methods] }.flatten.sort
+      methods = dm.essential_dsl_attributes.map { |hash| hash[:methods] }.flatten.sort
       expect(methods).to eq %i(
         added_files api base_commit branch_for_base branch_for_head commits
-        deleted_files deletions diff diff_for_file dismiss_out_of_range_messages
+        deleted_files deletions diff diff_for_file dismiss_out_of_range_messages fail failure
         head_commit html_link import_dangerfile import_plugin info_for_file
-        insertions lines_of_code modified_files mr_author mr_body mr_json
+        insertions lines_of_code markdown message modified_files mr_author mr_body mr_json
         mr_labels mr_title pr_author pr_body pr_diff pr_draft? pr_json
-        pr_labels pr_title renamed_files review scm_provider tags
+        pr_labels pr_title renamed_files review scm_provider status_report tags
+        violation_report warn
       )
     end
 
-    it "exposes all external plugin attributes by default" do
+    it "exposes no external plugin attributes by default" do
       class DangerCustomAttributePlugin < Danger::Plugin
         attr_reader :my_thing
       end
 
       dm = testing_dangerfile
-      methods = dm.external_dsl_attributes.map { |hash| hash[:methods] }.flatten.sort
-      expect(methods).to include(:my_thing)
+      methods = dm.essential_dsl_attributes.map { |hash| hash[:methods] }.flatten.sort
+      expect(methods).not_to include(:my_thing)
     end
 
     def sort_data(data)
@@ -204,14 +205,14 @@ RSpec.describe Danger::Dangerfile, host: :github do
         ]
       end
 
-      it "creates a table from a selection of external plugins DSL attributes info" do
+      it "creates a table from a selection of essential plugins DSL attributes info" do
         class DangerCustomAttributeTwoPlugin < Danger::Plugin
           def something
             "value_for_something"
           end
         end
 
-        data = @dm.method_values_for_plugin_hashes(@dm.external_dsl_attributes)
+        data = @dm.method_values_for_plugin_hashes(@dm.essential_dsl_attributes)
         # Ensure consistent ordering, and only extract the keys
         data = sort_data(data).map { |d| d.first.to_sym }
 
@@ -220,12 +221,12 @@ RSpec.describe Danger::Dangerfile, host: :github do
           deleted_files deletions diff head_commit insertions lines_of_code
           modified_files mr_author mr_body mr_json mr_labels mr_title
           pr_author pr_body pr_diff pr_draft? pr_json pr_labels pr_title
-          renamed_files review scm_provider tags
+          renamed_files review scm_provider status_report tags violation_report
         )
       end
 
       it "skips raw PR/MR JSON, and diffs" do
-        data = @dm.method_values_for_plugin_hashes(@dm.external_dsl_attributes)
+        data = @dm.method_values_for_plugin_hashes(@dm.essential_dsl_attributes)
 
         data_hash = data
           .collect { |v| [v.first, v.last] }
