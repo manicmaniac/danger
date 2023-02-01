@@ -120,10 +120,6 @@ module Danger
       @essential_plugins.map { |plugin| { plugin: plugin, methods: plugin.public_methods(false) } }
     end
 
-    def external_dsl_attributes
-      plugins.values.reject { |plugin| @core_plugins.include? plugin }.map { |plugin| { plugin: plugin, methods: plugin.public_methods(false) } }
-    end
-
     def method_values_for_plugin_hashes(plugin_hashes)
       plugin_hashes.flat_map do |plugin_hash|
         plugin = plugin_hash[:plugin]
